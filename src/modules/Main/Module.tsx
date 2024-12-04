@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { axiosFrontend } from '@/shared/utils/axios';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
@@ -10,36 +12,84 @@ export type Prompt = {
   prompt: string;
   first_frame_image: null | string | File | Blob | Buffer;
   prompt_optimizer: null | boolean;
-  watermark: null | boolean;
 };
 
 export type SetValuePromptFunction = (value: Partial<Prompt>) => void;
 
+type ResponseGenerateVideo = {
+  id: string;
+  status: 'succeeded' | 'processing' | 'failed';
+  prompt: string;
+  error: string;
+  video: string;
+};
+
 export const MainPageFlow = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
-
   const [createPrompt, setCreatePrompt] = useState<Prompt>({
     prompt: '',
     first_frame_image: null,
     prompt_optimizer: false,
-    watermark: false,
   });
 
-  const setValuePrompt = (value: Partial<typeof setCreatePrompt>) => {
+  const [startGenerate, setStartGenerate] = useState('');
+
+  const setValuePrompt = (value: Partial<Prompt>) => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
   };
+
+  const generateVideo = async () => {
+    const response = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
+    if (response.status !== 200) return console.error('Oops, что-то пошло не так');
+    console.log(response.data);
+    setStartGenerate(response.data.id);
+  };
+
+  const checkStatusVideo = () => {
+    console.log('checkStatusVideo');
+    return axiosFrontend.get<ResponseGenerateVideo>(`/generate/?id=${startGenerate}`);
+  };
+
+  const { data, isSuccess, isLoading, isError, error } = useQuery({
+    queryKey: ['video_data'],
+    queryFn: checkStatusVideo,
+    enabled: startGenerate !== '',
+    select: (data) => data.data,
+    refetchInterval: 1000 * 60,
+  });
+
+  const isDataSuccess = data && startGenerate !== '' ? data.status === 'succeeded' : false;
+
+  const querryClient = useQueryClient();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (data && data.status === 'succeeded') {
+        console.log('clear video');
+        querryClient.removeQueries({ queryKey: ['video_data'] });
+        setStartGenerate('');
+      }
+    }, 1000 * 2);
+
+    return () => clearTimeout(timeout);
+  }, [data, isSuccess, querryClient]);
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
       <Limits />
-      <div className='mt-[14px] flex h-60 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
-        <p className='text-base'> Submit a text prompt to create a video</p>
+      <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
+        {isSuccess && isDataSuccess && (
+          <video src={data.video} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+        )}
+        {isLoading || (data?.status === 'processing' && <div className='text-2xl font-bold text-uiPrimaryLightGray'>Loading...</div>)}
+        {isError && <div className='text-2xl font-bold text-uiPrimaryLightGray'>{`Error generation video: ${error.message}`}</div>}
+        {!data && <div className='text-2xl font-bold text-uiPrimaryLightGray'>Your video will appear here</div>}
       </div>
 
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
-        <ChooseBlock visible={false} />
-        <SettingsButtons isDownload={false} openModal={setIsOpenModal} />
-        <InputsBlock setterPrompt={setValuePrompt} />
+        <ChooseBlock visible={isDataSuccess} />
+        <SettingsButtons isDownload={isDataSuccess} openModal={setIsOpenModal} />
+        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={generateVideo} value={createPrompt.prompt} />
       </div>
 
       <Modal visible={isOpenModal} setterPrompt={setValuePrompt} closeModal={setIsOpenModal} />

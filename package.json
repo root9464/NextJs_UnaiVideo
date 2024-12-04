@@ -13,6 +13,8 @@
     "@prisma/client": "^6.0.1",
     "@radix-ui/react-switch": "^1.1.1",
     "@tanstack/react-query": "^5.62.1",
+    "@tanstack/react-query-devtools": "^5.62.2",
+    "axios": "^1.7.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "eslint-plugin-react-hooks": "^5.0.0",

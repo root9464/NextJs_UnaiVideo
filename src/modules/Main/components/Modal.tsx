@@ -33,16 +33,11 @@ export const Modal = ({ visible, closeModal, setterPrompt }: ModalProps) => {
             <div className='mt-4 flex h-full w-full flex-col gap-y-5 text-base font-semibold'>
               <div className='h-px w-full bg-uiPrimaryLightGray' />
               <div className='flex h-fit w-full flex-row items-center justify-between'>
-                <p>Anonymous generation</p>
+                <p>Prompt optimizer</p>
                 <Switch
                   className='h-6 w-10 data-[state=checked]:bg-uiLime'
                   onCheckedChange={(check) => setterPrompt({ prompt_optimizer: check })}
                 />
-              </div>
-              <div className='h-px w-full bg-uiPrimaryLightGray' />
-              <div className='flex h-fit w-full flex-row items-center justify-between'>
-                <p>Remove watermark</p>
-                <Switch className='h-6 w-10 data-[state=checked]:bg-uiLime' />
               </div>
             </div>
           </div>
