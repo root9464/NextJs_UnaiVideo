@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { Menu } from '@/components/Menu';
 import type { Metadata } from 'next';
 import './globals.css';
 import { GLobalProvider } from './provider';
@@ -12,7 +13,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang='en'>
       <body className='min-h-screen w-full bg-[#0F0F0F] text-white no-underline'>
-        <GLobalProvider>{children}</GLobalProvider>
+        <GLobalProvider>
+          {children}
+          <Menu />
+        </GLobalProvider>
       </body>
     </html>
   );
