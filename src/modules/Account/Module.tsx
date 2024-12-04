@@ -1,7 +1,13 @@
+'use client';
+import { axiosFrontend } from '@/shared/utils/axios';
+
 export const AccountPageFlow = () => {
+  const checkApi = () => {
+    axiosFrontend.get('/?name=123').then((res) => console.log(res.data));
+  };
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
-      <div className='absolute bottom-0 left-0 h-9 w-full bg-red-400'>f</div>
+      <button onClick={checkApi}>Check api</button>
     </div>
   );
 };
