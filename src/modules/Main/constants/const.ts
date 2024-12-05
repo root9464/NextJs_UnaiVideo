@@ -1,3 +1,5 @@
+import { User } from '@/shared/types/types';
+
 const initData = {
   user: {
     id: 99281932,
@@ -17,7 +19,7 @@ const initData = {
 
 const wallet = '0x4852dbB55711572c672970F6ff440914b91619CB';
 
-export const USER_DATA = {
+export const USER_DATA: User = {
   id: initData.user.id,
   tier: 'Hero',
   username: initData.user.username,

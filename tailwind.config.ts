@@ -58,6 +58,7 @@ const config: Config = {
         uiLime: '#42CF3B',
         uiDarkGray: '#19191B',
         uiPrimaryLightGray: '#353535',
+        uiBlack: '#09090B',
       },
       borderRadius: {
         lg: 'var(--radius)',
