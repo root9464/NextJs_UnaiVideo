@@ -4,7 +4,7 @@ import { TIERS_DATA } from './constants/const';
 
 export const AccountPageFlow = () => {
   return (
-    <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
+    <div className='relative h-[calc(100%-113px)] w-full overflow-y-scroll px-4 py-5'>
       <WelcomeText />
 
       <TiersBlock tier={'Legend'} unaiTokens={1_000_000} />
