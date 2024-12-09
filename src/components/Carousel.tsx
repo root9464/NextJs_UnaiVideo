@@ -1,5 +1,6 @@
 'use client';
 
+import { calculateColor } from '@/modules/Account/func/funcs';
 import { Tier } from '@/shared/types/types';
 import { motion, useMotionValue } from 'motion/react';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
@@ -20,17 +21,6 @@ const SPRING_OPTIONS = {
   mass: 3,
   stiffness: 400,
   damping: 50,
-};
-
-const calculateColor = (tier: Tier) => {
-  const colors = {
-    null: 'bg-[#8E939C]',
-    Pioneer: 'bg-[#54E584]',
-    Champion: 'bg-[#79CEFF]',
-    Hero: 'bg-[#BD6DFF]',
-    Legend: 'bg-[#FFA459]',
-  };
-  return colors[tier as keyof typeof colors] || colors.null;
 };
 
 export const SwipeCarousel = ({ blockContent }: { blockContent: CarouselProps[] }) => {
@@ -95,7 +85,7 @@ const Blocks = ({ imgIndex, blockContent }: { imgIndex: number; blockContent: Ca
           style={{ transform: 'none' }}
           className={`relative flex h-full w-full shrink-0 flex-col rounded-xl bg-uiDarkGray`}
         >
-          <div className={`text-uiBlack h-10 w-full rounded-t-xl px-5 py-2.5 ${calculateColor(value.tier)}`}>
+          <div className={`h-10 w-full rounded-t-xl px-5 py-2.5 text-uiBlack bg-${calculateColor(value.tier)}`}>
             <p className='text-base font-semibold'>{value.headerText}</p>
           </div>
 

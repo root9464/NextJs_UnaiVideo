@@ -3,55 +3,51 @@ import prisma from '@shared/utils/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  try {
-    const user: User = await req.json();
+  const user: User = await req.json();
 
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ id: user.id }, { username: user.username }],
-      },
-    });
+  if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'User data is required' }, { status: 400 });
 
-    if (existingUser) {
-      if (existingUser.firstName !== user.firstName || existingUser.lastName !== user.lastName || existingUser.tier !== user.tier) {
-        const updatedUser = await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            firstName: user.firstName,
-            lastName: user.lastName,
-            tier: user.tier,
-          },
-        });
-        return NextResponse.json({
-          status: 'User updated',
-          success: true,
-          user: updatedUser,
-        });
-      }
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [{ id: user.id }, { username: user.username }],
+    },
+  });
+
+  if (existingUser) {
+    if (
+      existingUser.firstName !== user.firstName ||
+      existingUser.lastName !== user.lastName ||
+      existingUser.tier !== user.tier ||
+      existingUser.wallet !== user.wallet
+    ) {
+      const updatedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          tier: user.tier,
+          wallet: user.wallet,
+        },
+      });
       return NextResponse.json({
-        status: 'User already exists',
+        status: 'User updated',
         success: true,
-        user: existingUser,
+        user: updatedUser,
       });
     }
-
-    const newUser = await prisma.user.create({ data: user });
     return NextResponse.json({
-      status: 'User created',
+      status: 'User already exists',
       success: true,
-      user: newUser,
+      user: existingUser,
     });
-  } catch (error) {
-    console.error('Error saving user:', error);
-    return NextResponse.json(
-      {
-        status: 'Error',
-        success: false,
-        error: 'Failed to save user to the database.',
-      },
-      { status: 500 },
-    );
   }
+
+  const newUser = await prisma.user.create({ data: user });
+  return NextResponse.json({
+    status: 'User created',
+    success: true,
+    user: newUser,
+  });
 }
 
 export async function GET(req: NextRequest) {

@@ -1,4 +1,5 @@
 import { SwipeCarousel } from '@/components/Carousel';
+import { TiersBlock } from './components/TIers';
 import { TIERS_DATA } from './constants/const';
 
 export const AccountPageFlow = () => {
@@ -6,19 +7,17 @@ export const AccountPageFlow = () => {
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
       <WelcomeText />
 
-      <div className='grid h-fit w-full grid-cols-2 rounded-xl bg-uiDarkGray p-5'>
-        <div className='flex h-full w-full flex-col gap-y-2'>
-          <p className='text-base font-semibold'>UNAI Balance:</p>
-          <p className='text-xl font-semibold'>
-            <span className='text-uiLime'>0.00</span> UNAI
-          </p>
-        </div>
-        <div className='rounded-[6px] bg-uiPrimaryLightGray p-4 text-center'>
-          <p className='text-xl font-semibold'>NO TIER</p>
-        </div>
-      </div>
+      <TiersBlock tier={'Legend'} unaiTokens={1_000_000} />
 
       <SwipeCarousel blockContent={TIERS_DATA} />
+
+      <div className='mt-5 flex h-max w-full flex-col gap-[14px] rounded-xl bg-uiDarkGray p-5'>
+        <h3 className='text-base'>Connect your wallet and buy $UNAI to unleash full power of UNAI VIDEO!</h3>
+        <div className='flex h-fit w-full flex-row gap-[14px]'>
+          <button className='h-fit w-full rounded-[8px] bg-uiLime px-3 py-[14px] text-sm font-semibold text-uiDarkGray'>Connect Wallet</button>
+          <button className='h-fit w-full rounded-[8px] border border-uiLime bg-transparent px-3 py-[14px] text-sm font-semibold'>Docs</button>
+        </div>
+      </div>
     </div>
   );
 };

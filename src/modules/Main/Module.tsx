@@ -101,7 +101,7 @@ export const MainPageFlow = () => {
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
-      <Limits />
+      <Limits tokenValue={2} />
       <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
         {isSuccess && isDataSuccess && (
           <video src={data.video} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
