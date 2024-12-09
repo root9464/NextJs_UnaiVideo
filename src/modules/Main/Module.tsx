@@ -24,6 +24,17 @@ type ResponseGenerateVideo = {
   video: string;
 };
 
+type BacketFileResponse = {
+  success: boolean;
+  data: {
+    id: string;
+    username: string;
+    file_name: string;
+    createdAt: Date;
+  };
+};
+const TIMER_BLYAT = 1000 * 60;
+
 export const MainPageFlow = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [createPrompt, setCreatePrompt] = useState<Prompt>({
@@ -69,10 +80,24 @@ export const MainPageFlow = () => {
         querryClient.removeQueries({ queryKey: ['video_data'] });
         setStartGenerate('');
       }
-    }, 1000 * 2);
+    }, TIMER_BLYAT);
 
     return () => clearTimeout(timeout);
   }, [data, isSuccess, querryClient]);
+
+  const saveVideo = () => {
+    return axiosFrontend.post<BacketFileResponse>('/generate/backet', {
+      username: 'demo1',
+      video_url: data!.video,
+    });
+  };
+
+  useQuery({
+    queryKey: ['video_data_save'],
+    queryFn: saveVideo,
+    enabled: isDataSuccess,
+    select: (data) => data.data,
+  });
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>

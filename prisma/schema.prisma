@@ -23,6 +23,7 @@ enum Tier {
 model user {
   id        Int     @id @unique
   tier      Tier?
+  limits    Int?
   username  String  @unique
   firstName String
   lastName  String
@@ -30,20 +31,9 @@ model user {
   wallet    String?
 }
 
-model backet_file {
-  id               String             @id @default(cuid())
-  username         String
-  file_name        String
-  video_id         String             @unique
-  created_at       DateTime           @default(now())
-  video_generation video_generation[]
-}
-
-model video_generation {
-  id          String       @id @default(cuid())
-  username    String
-  prompt      String
-  limits      Int
-  video_id    String
-  backet_file backet_file? @relation(fields: [video_id], references: [video_id])
+model video {
+  id        String   @id @unique
+  username  String
+  file_name String
+  createdAt DateTime @default(now())
 }
