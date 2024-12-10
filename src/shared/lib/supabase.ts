@@ -4,7 +4,7 @@ import axios from 'axios';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL as string;
 const subaseKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY as string;
 
-const supabase = createClient(supabaseUrl, subaseKey);
+export const supabase = createClient(supabaseUrl, subaseKey);
 
 export const uploadVideoToSupabase = async (url: string, bucketName: string, fileName: string, typeFile: string) => {
   const response = await axios.get(url, {
@@ -22,6 +22,14 @@ export const uploadVideoToSupabase = async (url: string, bucketName: string, fil
   if (error) {
     throw error;
   }
+
+  return data;
+};
+
+export const getVideoFromSupabase = async (fileName: string) => {
+  const { data } = supabase.storage.from('videos').getPublicUrl(fileName);
+
+  if (!data) throw new Error('Video not found');
 
   return data;
 };

@@ -1,6 +1,6 @@
-import { generateId } from '@/shared/lib/generateId';
-import prisma from '@/shared/utils/db';
-import { uploadVideoToSupabase } from '@shared/lib/upload.supabase';
+import { generateId } from '@shared/lib/generateId';
+import { getVideoFromSupabase, uploadVideoToSupabase } from '@shared/lib/supabase';
+import prisma from '@shared/utils/db';
 import { NextResponse } from 'next/server';
 
 type BacketFile = {
@@ -13,14 +13,10 @@ const typeFile = 'video/mp4';
 
 export async function POST(req: Request) {
   const body: BacketFile = await req.json();
-  if (!body) {
-    return NextResponse.json({ error: 'Field add data in bucket' }, { status: 400 });
-  }
+  if (!body) return NextResponse.json({ error: 'Field add data in bucket' }, { status: 400 });
 
   const { video_url, username } = body;
-  if (!video_url) {
-    return NextResponse.json({ error: 'Field video_url is required' }, { status: 400 });
-  }
+  if (!video_url) return NextResponse.json({ error: 'Field video_url is required' }, { status: 400 });
 
   const uniqueId = generateId();
   const fileName = `video_${uniqueId}_${username}`;
@@ -38,7 +34,10 @@ export async function POST(req: Request) {
 
   if (!savedRecord) return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
 
-  return NextResponse.json({ success: true, data: savedRecord });
+  const videoUrl = await getVideoFromSupabase(savedRecord.file_name);
+  if (!videoUrl) return NextResponse.json({ error: 'Failed to get video in bucket' }, { status: 500 });
+
+  return NextResponse.json({ success: true, data: videoUrl.publicUrl });
 }
 
 export async function GET(req: Request) {
@@ -54,7 +53,10 @@ export async function GET(req: Request) {
       },
     });
     if (!response) return NextResponse.json({ error: 'Video not found' });
-    return NextResponse.json(response);
+
+    const videoUrl = await getVideoFromSupabase(response.file_name);
+
+    return NextResponse.json(videoUrl);
   }
 
   if (username) {

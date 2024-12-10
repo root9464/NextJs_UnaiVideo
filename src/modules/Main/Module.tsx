@@ -1,12 +1,14 @@
 'use client';
 import { axiosFrontend } from '@/shared/utils/axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
 import { Modal } from './components/Modal';
 import { SettingsButtons } from './components/SettingsButtons';
+import { useCheckVideo } from './hooks/useCheckVIdeo';
+import { BacketFileResponse } from './hooks/useSaveVideo';
 
 export type Prompt = {
   prompt: string;
@@ -16,24 +18,13 @@ export type Prompt = {
 
 export type SetValuePromptFunction = (value: Partial<Prompt>) => void;
 
-type ResponseGenerateVideo = {
+export type ResponseGenerateVideo = {
   id: string;
   status: 'succeeded' | 'processing' | 'failed';
   prompt: string;
   error: string;
   video: string;
 };
-
-type BacketFileResponse = {
-  success: boolean;
-  data: {
-    id: string;
-    username: string;
-    file_name: string;
-    createdAt: Date;
-  };
-};
-const TIMER_BLYAT = 1000 * 60;
 
 export const MainPageFlow = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -43,58 +34,35 @@ export const MainPageFlow = () => {
     prompt_optimizer: false,
   });
 
-  const [startGenerate, setStartGenerate] = useState('');
+  const queryClient = useQueryClient();
 
   const setValuePrompt = (value: Partial<Prompt>) => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
   };
 
   const generateVideo = async () => {
-    const response = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
-    if (response.status !== 200) return console.error('Oops, что-то пошло не так');
-    console.log(response.data);
-    setStartGenerate(response.data.id);
+    // const { data, status } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
+    // if (status !== 200) return console.error('Oops, что-то пошло не так');
+    // console.log(data);
+    localStorage.setItem('video_id', '83d6g6c5csrg80cknxv9q4njaw');
   };
 
-  const checkStatusVideo = () => {
-    console.log('checkStatusVideo');
-    return axiosFrontend.get<ResponseGenerateVideo>(`/generate/?id=${startGenerate}`);
-  };
+  const generateVideoData = localStorage.getItem('video_id');
 
-  const { data, isSuccess, isLoading, isError, error } = useQuery({
-    queryKey: ['video_data'],
-    queryFn: checkStatusVideo,
-    enabled: startGenerate !== '',
-    select: (data) => data.data,
-    refetchInterval: 1000 * 60,
-  });
+  const { data: RawVideoData, isLoading } = useCheckVideo(generateVideoData ?? '');
+  const isDataSuccess = RawVideoData && generateVideoData !== '' ? RawVideoData.status === 'succeeded' : false;
+  if (RawVideoData) console.log(`Data isDonwload ${isDataSuccess}`, RawVideoData);
 
-  const isDataSuccess = data && startGenerate !== '' ? data.status === 'succeeded' : false;
-
-  const querryClient = useQueryClient();
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (data && data.status === 'succeeded') {
-        console.log('clear video');
-        querryClient.removeQueries({ queryKey: ['video_data'] });
-        setStartGenerate('');
-      }
-    }, TIMER_BLYAT);
-
-    return () => clearTimeout(timeout);
-  }, [data, isSuccess, querryClient]);
-
-  const saveVideo = () => {
+  const saveVideo = (videoUrl: string) => {
+    console.log('saveVideo', videoUrl);
     return axiosFrontend.post<BacketFileResponse>('/generate/backet', {
       username: 'demo1',
-      video_url: data!.video,
+      video_url: videoUrl,
     });
   };
-
-  useQuery({
-    queryKey: ['video_data_save'],
-    queryFn: saveVideo,
+  const { data: Video, isSuccess } = useQuery({
+    queryKey: ['video'],
+    queryFn: () => saveVideo(RawVideoData!.video),
     enabled: isDataSuccess,
     select: (data) => data.data,
   });
@@ -103,12 +71,13 @@ export const MainPageFlow = () => {
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
       <Limits tokenValue={2} />
       <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
-        {isSuccess && isDataSuccess && (
-          <video src={data.video} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+        {Video && isSuccess ? (
+          <video src={Video.data} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+        ) : isLoading || RawVideoData?.status === 'processing' ? (
+          <div className='text-2xl font-bold text-uiPrimaryLightGray'>Loading...</div>
+        ) : (
+          <div className='text-2xl font-bold text-uiPrimaryLightGray'>Your video will appear here</div>
         )}
-        {isLoading || (data?.status === 'processing' && <div className='text-2xl font-bold text-uiPrimaryLightGray'>Loading...</div>)}
-        {isError && <div className='text-2xl font-bold text-uiPrimaryLightGray'>{`Error generation video: ${error.message}`}</div>}
-        {!data && <div className='text-2xl font-bold text-uiPrimaryLightGray'>Your video will appear here</div>}
       </div>
 
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
