@@ -1,4 +1,5 @@
-import { generateId } from '@shared/lib/generateId';
+import { PredictionResponse } from '@/shared/types/types';
+import { axiosInstance } from '@/shared/utils/axios';
 import { getVideoFromSupabase, uploadVideoToSupabase } from '@shared/lib/supabase';
 import prisma from '@shared/utils/db';
 import { NextResponse } from 'next/server';
@@ -6,6 +7,7 @@ import { NextResponse } from 'next/server';
 type BacketFile = {
   username: string;
   video_url: string;
+  id: string;
 };
 
 const bucketName = 'videos';
@@ -15,29 +17,56 @@ export async function POST(req: Request) {
   const body: BacketFile = await req.json();
   if (!body) return NextResponse.json({ error: 'Field add data in bucket' }, { status: 400 });
 
-  const { video_url, username } = body;
-  if (!video_url) return NextResponse.json({ error: 'Field video_url is required' }, { status: 400 });
+  const { video_url, username, id } = body;
 
-  const uniqueId = generateId();
-  const fileName = `video_${uniqueId}_${username}`;
+  const fileName = `${username}_${id}`;
+
+  const checkStatusVideo = await axiosInstance.get<PredictionResponse>(`/predictions/${id}`);
+  if (!checkStatusVideo) return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+
+  const { status, error, logs } = checkStatusVideo.data;
+  if (status !== 'succeeded' && status !== 'failed') {
+    return NextResponse.json({ id, status });
+  }
+
+  if (status === 'failed') {
+    return NextResponse.json({ error, logs, status });
+  }
+
+  const checkVideoInDb = await prisma.video.findFirst({
+    where: {
+      id: id,
+    },
+  });
+  if (checkVideoInDb) {
+    const { publicUrl } = await getVideoFromSupabase(fileName);
+    return NextResponse.json({
+      id,
+      status: status,
+      video_url: publicUrl,
+    });
+  }
 
   const supabaseResponse = await uploadVideoToSupabase(video_url, bucketName, fileName, typeFile);
-  if (!supabaseResponse || !supabaseResponse.id) return NextResponse.json({ error: 'Failed to save data in bucket' }, { status: 500 });
+  if (!supabaseResponse || !supabaseResponse.id) return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
 
-  const savedRecord = await prisma.video.create({
+  await prisma.video.create({
     data: {
-      id: supabaseResponse.id,
-      file_name: fileName,
+      id: id,
+      file_name: supabaseResponse.id,
       username: username,
     },
   });
 
-  if (!savedRecord) return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
+  const { publicUrl } = await getVideoFromSupabase(fileName);
 
-  const videoUrl = await getVideoFromSupabase(savedRecord.file_name);
-  if (!videoUrl) return NextResponse.json({ error: 'Failed to get video in bucket' }, { status: 500 });
+  if (!publicUrl) return NextResponse.json({ error: 'Dont get video from storage' }, { status: 500 });
 
-  return NextResponse.json({ success: true, data: videoUrl.publicUrl });
+  return NextResponse.json({
+    id,
+    status: status,
+    video_url: publicUrl,
+  });
 }
 
 export async function GET(req: Request) {

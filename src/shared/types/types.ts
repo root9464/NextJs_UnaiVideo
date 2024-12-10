@@ -17,3 +17,28 @@ export type User = {
   hash: string;
   wallet: string;
 };
+
+export type PredictionResponse = {
+  id: string;
+  model: string;
+  version: string;
+  input: {
+    prompt: string;
+  };
+  logs: string;
+  output: string;
+  data_removed: boolean;
+  error: null | string;
+  status: 'succeeded' | 'processing' | 'failed';
+  created_at: string;
+  started_at: string;
+  completed_at: string;
+  urls: {
+    cancel: string;
+    get: string;
+    stream: string;
+  };
+  metrics: {
+    predict_time: number;
+  };
+};

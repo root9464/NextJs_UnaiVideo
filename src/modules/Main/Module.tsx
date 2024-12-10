@@ -1,14 +1,13 @@
 'use client';
 import { axiosFrontend } from '@/shared/utils/axios';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
 import { Modal } from './components/Modal';
 import { SettingsButtons } from './components/SettingsButtons';
-import { useCheckVideo } from './hooks/useCheckVIdeo';
-import { BacketFileResponse } from './hooks/useSaveVideo';
+import { useVideo } from './hooks/useVideo';
 
 export type Prompt = {
   prompt: string;
@@ -41,48 +40,40 @@ export const MainPageFlow = () => {
   };
 
   const generateVideo = async () => {
-    // const { data, status } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
-    // if (status !== 200) return console.error('Oops, что-то пошло не так');
-    // console.log(data);
-    localStorage.setItem('video_id', '83d6g6c5csrg80cknxv9q4njaw');
-  };
-
-  const generateVideoData = localStorage.getItem('video_id');
-
-  const { data: RawVideoData, isLoading } = useCheckVideo(generateVideoData ?? '');
-  const isDataSuccess = RawVideoData && generateVideoData !== '' ? RawVideoData.status === 'succeeded' : false;
-  if (RawVideoData) console.log(`Data isDonwload ${isDataSuccess}`, RawVideoData);
-
-  const saveVideo = (videoUrl: string) => {
-    console.log('saveVideo', videoUrl);
-    return axiosFrontend.post<BacketFileResponse>('/generate/backet', {
-      username: 'demo1',
-      video_url: videoUrl,
+    const { data, status } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
+    if (status !== 200) return console.error('Oops, что-то пошло не так');
+    console.log(data);
+    queryClient.setQueryData(['video_id'], {
+      id: data.id,
+      video_url: data.video,
     });
   };
-  const { data: Video, isSuccess } = useQuery({
-    queryKey: ['video'],
-    queryFn: () => saveVideo(RawVideoData!.video),
-    enabled: isDataSuccess,
-    select: (data) => data.data,
-  });
+
+  const generateVideoData = queryClient.getQueryData(['video_id']) as { id: string; video_url: string };
+
+  const { data: Video, isSuccess, isLoading, isError } = useVideo(generateVideoData?.video_url, generateVideoData?.id, !!generateVideoData);
+
+  if (isSuccess) console.log('Video data', Video);
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
       <Limits tokenValue={2} />
       <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
-        {Video && isSuccess ? (
-          <video src={Video.data} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
-        ) : isLoading || RawVideoData?.status === 'processing' ? (
+        {Video && Video.isVideo ? (
+          // <video src={Video.data} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+          <img src={Video.video_url} alt='' className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+        ) : isLoading || Video?.status === 'processing' ? (
           <div className='text-2xl font-bold text-uiPrimaryLightGray'>Loading...</div>
+        ) : isError ? (
+          <div className='text-2xl font-bold text-uiPrimaryLightGray'>Error</div>
         ) : (
           <div className='text-2xl font-bold text-uiPrimaryLightGray'>Your video will appear here</div>
         )}
       </div>
 
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
-        <ChooseBlock visible={isDataSuccess} />
-        <SettingsButtons isDownload={isDataSuccess} openModal={setIsOpenModal} />
+        <ChooseBlock visible={isSuccess && Video.isVideo} />
+        <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
         <InputsBlock setterPrompt={setValuePrompt} submitPrompt={generateVideo} value={createPrompt.prompt} />
       </div>
 

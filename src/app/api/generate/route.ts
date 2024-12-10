@@ -1,4 +1,5 @@
 import { Prompt } from '@modules/Main/Module';
+import { PredictionResponse } from '@shared/types/types';
 import { axiosInstance } from '@shared/utils/axios';
 import { NextResponse } from 'next/server';
 
@@ -29,31 +30,6 @@ export async function POST(req: Request) {
     video: data.urls.stream,
   });
 }
-
-type PredictionResponse = {
-  id: string;
-  model: string;
-  version: string;
-  input: {
-    prompt: string;
-  };
-  logs: string;
-  output: string;
-  data_removed: boolean;
-  error: null | string;
-  status: string;
-  created_at: string;
-  started_at: string;
-  completed_at: string;
-  urls: {
-    cancel: string;
-    get: string;
-    stream: string;
-  };
-  metrics: {
-    predict_time: number;
-  };
-};
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
