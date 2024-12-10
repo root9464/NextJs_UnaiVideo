@@ -1,9 +1,18 @@
-'use client';
 import { Tier } from '@shared/types/types';
-import { calculateColor } from '../func/funcs';
+
+const calculateTextColor = (tier: Tier) => {
+  const colors = {
+    null: 'text-[#8E939C]',
+    Pioneer: 'text-[#54E584]',
+    Champion: 'text-[#79CEFF]',
+    Hero: 'text-[#BD6DFF]',
+    Legend: 'text-[#FFA459]',
+  };
+  return colors[tier as keyof typeof colors] || colors.null;
+};
 
 export const TiersBlock = ({ tier, unaiTokens }: { tier: Tier; unaiTokens: number }) => {
-  const tierColor = calculateColor(tier);
+  const tierColor = calculateTextColor(tier);
   return (
     <div className='grid h-fit w-full grid-cols-2 rounded-xl bg-uiDarkGray p-5'>
       <div className='flex h-full w-full flex-col justify-center gap-y-2'>
@@ -15,7 +24,7 @@ export const TiersBlock = ({ tier, unaiTokens }: { tier: Tier; unaiTokens: numbe
       <div className='rounded-[6px] bg-uiPrimaryLightGray p-4 text-center'>
         {tier ? (
           <p className='flex flex-col text-xl font-semibold'>
-            TIER <span className={`text-${tierColor}`}>{tier}</span>
+            TIER <span className={`${tierColor}`}>{tier}</span>
           </p>
         ) : (
           <p className='text-xl font-semibold'>NO TIER</p>
