@@ -28,6 +28,16 @@
       "@public/*": ["./public/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/api/route.js"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/app/api/route.js",
+    "eslint.config.mjs",
+    "plugin/costom.rules.js",
+    "plugin/custom.rules.mjs",
+    "plugin/custom.rules.js"
+  ],
   "exclude": ["node_modules"]
 }

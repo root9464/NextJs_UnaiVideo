@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/eslint-plugin-next": "^15.1.0",
     "@prisma/client": "^6.0.1",
     "@radix-ui/react-switch": "^1.1.1",
     "@supabase/supabase-js": "^2.47.2",
@@ -20,6 +21,7 @@
     "@telegram-apps/sdk": "^2.9.0",
     "@telegram-apps/sdk-react": "^2.0.18",
     "@telegram-apps/signals": "^1.1.0",
+    "@typescript-eslint/utils": "^8.18.0",
     "axios": "^1.7.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

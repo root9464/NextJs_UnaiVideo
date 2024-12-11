@@ -8,7 +8,7 @@ export type BacketFileResponse = {
   video_url: string;
 };
 
-export const useVideo = (videoUrl: string, videoId: string, enabled: boolean) => {
+export const useVideo = (videoId: string, videoUrl: string, enabled: boolean) => {
   return useQuery({
     queryKey: ['video'],
     queryFn: async () => {
