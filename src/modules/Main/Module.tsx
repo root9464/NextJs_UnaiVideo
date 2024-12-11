@@ -1,12 +1,11 @@
 'use client';
-import { axiosFrontend } from '@/shared/utils/axios';
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
 import { Modal } from './components/Modal';
 import { SettingsButtons } from './components/SettingsButtons';
+import { useGenerateVideo } from './hooks/useGenerateVideo';
 import { useVideo } from './hooks/useVideo';
 
 export type Prompt = {
@@ -19,7 +18,7 @@ export type SetValuePromptFunction = (value: Partial<Prompt>) => void;
 
 export type ResponseGenerateVideo = {
   id: string;
-  status: 'succeeded' | 'processing' | 'failed';
+  status: 'start' | 'succeeded' | 'processing' | 'failed';
   prompt: string;
   error: string;
   video: string;
@@ -33,26 +32,13 @@ export const MainPageFlow = () => {
     prompt_optimizer: false,
   });
 
-  const queryClient = useQueryClient();
-
   const setValuePrompt = (value: Partial<Prompt>) => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
   };
 
-  const generateVideo = async () => {
-    const { data, status } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', createPrompt);
-    if (status !== 200) return console.error('Oops, что-то пошло не так');
-    console.log(data);
-    queryClient.setQueryData(['video_id'], {
-      id: data.id,
-      video_url: data.video,
-    });
-  };
+  const { data, mutate } = useGenerateVideo(createPrompt);
 
-  const generateVideoData = queryClient.getQueryData(['video_id']) as { id: string; video_url: string };
-
-  const { data: Video, isSuccess, isLoading, isError } = useVideo(generateVideoData?.video_url, generateVideoData?.id, !!generateVideoData);
-
+  const { data: Video, isSuccess, isLoading, isError } = useVideo(data?.id || '', data?.video || '', !!data);
   if (isSuccess) console.log('Video data', Video);
 
   return (
@@ -60,8 +46,11 @@ export const MainPageFlow = () => {
       <Limits tokenValue={2} />
       <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
         {Video && Video.isVideo ? (
-          // <video src={Video.data} controls className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
-          <img src={Video.video_url} alt='' className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none' />
+          <video
+            src={Video.video_url}
+            controls
+            className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none'
+          />
         ) : isLoading || Video?.status === 'processing' ? (
           <div className='text-2xl font-bold text-uiPrimaryLightGray'>Loading...</div>
         ) : isError ? (
@@ -74,7 +63,7 @@ export const MainPageFlow = () => {
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
         <ChooseBlock visible={isSuccess && Video.isVideo} />
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
-        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={generateVideo} value={createPrompt.prompt} />
+        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={mutate} value={createPrompt.prompt} />
       </div>
 
       <Modal visible={isOpenModal} setterPrompt={setValuePrompt} closeModal={setIsOpenModal} />
