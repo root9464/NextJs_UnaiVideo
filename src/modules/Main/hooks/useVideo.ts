@@ -12,7 +12,7 @@ export const useVideo = (videoUrl: string, videoId: string, enabled: boolean) =>
   return useQuery({
     queryKey: ['video'],
     queryFn: async () => {
-      console.log('saveVideo', videoUrl);
+      console.log('saveVideo', { videoUrl, videoId });
 
       const { data } = await axiosFrontend.post<BacketFileResponse>('/generate/backet', {
         username: 'demo1',
@@ -20,13 +20,9 @@ export const useVideo = (videoUrl: string, videoId: string, enabled: boolean) =>
         id: videoId,
       });
 
-      if (data.status === 'failed') {
-        throw new Error('Video processing failed');
-      }
-
       return data;
     },
-    enabled,
+    enabled: enabled,
     refetchInterval: (query) => {
       const data = query.state.data;
       if (data && data.status === 'succeeded') {

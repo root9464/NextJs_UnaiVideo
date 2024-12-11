@@ -1,17 +1,16 @@
-import { Prompt } from '@modules/Main/Module';
-import { axiosFrontend } from '@shared/utils/axios';
+import { axiosFrontend } from '@/shared/utils/axios';
+import { Prompt, ResponseGenerateVideo } from '@modules/Main/Module';
 import { useMutation } from '@tanstack/react-query';
-import { ResponseGenerateVideo } from '../Module';
 
-export const useGenerateVideo = (Prompt: Prompt) =>
+export const useGenerateVideo = () =>
   useMutation({
     mutationKey: ['video_id'],
-    mutationFn: async () => {
-      if (!Prompt) throw new Error('Prompt is required');
+    mutationFn: async (prompt: Prompt) => {
+      console.log('generateVideo', prompt);
 
-      const { data, status } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', Prompt);
+      const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', prompt);
 
-      if (status !== 200) return console.error('Oops, что-то пошло не так');
+      if (!data) throw new Error('Something went wrong');
 
       return data;
     },

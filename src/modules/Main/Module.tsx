@@ -36,9 +36,9 @@ export const MainPageFlow = () => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
   };
 
-  const { data, mutate } = useGenerateVideo(createPrompt);
+  const { data, mutate } = useGenerateVideo();
+  const { data: Video, isSuccess, isLoading, isError } = useVideo(data?.id ?? '', data?.video ?? '', !!data);
 
-  const { data: Video, isSuccess, isLoading, isError } = useVideo(data?.id || '', data?.video || '', !!data);
   if (isSuccess) console.log('Video data', Video);
 
   return (
@@ -63,7 +63,7 @@ export const MainPageFlow = () => {
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
         <ChooseBlock visible={isSuccess && Video.isVideo} />
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
-        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={mutate} value={createPrompt.prompt} />
+        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={() => mutate(createPrompt)} value={createPrompt.prompt} />
       </div>
 
       <Modal visible={isOpenModal} setterPrompt={setValuePrompt} closeModal={setIsOpenModal} />
