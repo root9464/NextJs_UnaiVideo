@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
@@ -26,11 +26,15 @@ export type ResponseGenerateVideo = {
 
 export const MainPageFlow = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isChooseModal, setIsChooseModal] = useState(false);
+
   const [createPrompt, setCreatePrompt] = useState<Prompt>({
     prompt: '',
     first_frame_image: null,
     prompt_optimizer: false,
   });
+
+  const [timeStartVideo, setTimeStartVideo] = useState(0);
 
   const setValuePrompt = (value: Partial<Prompt>) => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
@@ -39,7 +43,11 @@ export const MainPageFlow = () => {
   const { data, mutate } = useGenerateVideo();
   const { data: Video, isSuccess, isLoading, isError } = useVideo(data?.id ?? '', data?.video ?? '', !!data);
 
-  if (isSuccess) console.log('Video data', Video);
+  const videoTimeTick = (event: SyntheticEvent<HTMLVideoElement, Event>): void => {
+    const currentTime: number = Math.floor(event.currentTarget.currentTime);
+    console.log(`Current minute: ${currentTime}`);
+    if (isChooseModal) setTimeStartVideo(currentTime);
+  };
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-4 py-5'>
@@ -49,6 +57,7 @@ export const MainPageFlow = () => {
           <video
             src={Video.video_url}
             controls
+            onTimeUpdate={isChooseModal ? videoTimeTick : undefined}
             className='h-full w-full rounded-xl border border-uiLime/30 bg-lime-400 object-cover outline-none'
           />
         ) : isLoading || Video?.status === 'processing' ? (
@@ -61,9 +70,13 @@ export const MainPageFlow = () => {
       </div>
 
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
-        <ChooseBlock visible={isSuccess && Video.isVideo} />
+        <ChooseBlock visible={isSuccess && Video.isVideo} isOpenModal={isChooseModal} setIsOpenModal={setIsChooseModal} />
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
-        <InputsBlock setterPrompt={setValuePrompt} submitPrompt={() => mutate(createPrompt)} value={createPrompt.prompt} />
+        <InputsBlock
+          setterPrompt={setValuePrompt}
+          submitPrompt={() => mutate({ id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt })}
+          value={createPrompt.prompt}
+        />
       </div>
 
       <Modal visible={isOpenModal} setterPrompt={setValuePrompt} closeModal={setIsOpenModal} />

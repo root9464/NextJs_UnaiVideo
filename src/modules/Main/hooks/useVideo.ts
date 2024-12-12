@@ -33,6 +33,7 @@ export const useVideo = (videoId: string, videoUrl: string, enabled: boolean) =>
     },
     retry: false,
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
     select: (data) => ({
       ...data,
       isVideo: data.status === 'succeeded' && !!data.video_url,
