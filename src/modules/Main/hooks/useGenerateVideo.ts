@@ -5,32 +5,38 @@ import { useMutation } from '@tanstack/react-query';
 export const useGenerateVideo = () =>
   useMutation({
     mutationKey: ['video_id'],
-    mutationFn: async (prompt: Prompt & { id?: string; time_start?: number }) => {
-      console.log('generateVideo', prompt);
+    mutationFn: async (promptObject: Prompt & { video_id?: string; time_start?: number }) => {
+      console.log('generate video data', promptObject);
 
-      if (prompt.id && prompt.time_start) {
-        console.log('generateNewVideo', prompt);
+      const { prompt, time_start, video_id, prompt_optimizer, first_frame_image } = promptObject;
 
-        const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate/extension', {
-          id: prompt.id,
-          time_start: prompt.time_start,
-          ...prompt,
+      if (video_id && time_start) {
+        console.log('generateNewVideo', {
+          prompt: prompt,
+          video_id: video_id,
+          time_start: time_start,
+        });
+
+        const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', {
+          prompt: prompt,
+          video_id: video_id,
+          time_start: time_start,
         });
 
         if (!data) throw new Error('Something went wrong');
 
         return data;
-      } else if (!prompt.id && !prompt.time_start) {
-        const { data } = await new Promise<{ data: ResponseGenerateVideo }>((resolve) => {
-          resolve({
-            data: {
-              id: 'sd19wbz1e9rg80ckpx5ahjckmr',
-              status: 'succeeded',
-              prompt: '',
-              error: '',
-              video: '',
-            },
-          });
+      } else if (!video_id && !time_start) {
+        console.log('generateVideo', {
+          prompt: prompt,
+          prompt_optimizer: prompt_optimizer,
+          first_frame_image: first_frame_image,
+        }); // ЕСЛИ ЧТО ВОТ ТУТ ВОЗМОЖНО ОШИБКА
+
+        const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', {
+          prompt: prompt,
+          prompt_optimizer: prompt_optimizer,
+          first_frame_image: first_frame_image,
         });
 
         if (!data) throw new Error('Something went wrong');
@@ -40,10 +46,10 @@ export const useGenerateVideo = () =>
     },
 
     onSuccess: (data) => {
-      console.log('generateVideo', data);
+      console.log('video generated successfully', data);
     },
 
     onError: (error) => {
-      console.error('Ошибка:', error);
+      console.error('video generation error:', error);
     },
   });

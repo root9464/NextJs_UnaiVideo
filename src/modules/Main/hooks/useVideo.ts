@@ -8,17 +8,20 @@ export type BacketFileResponse = {
   video_url: string;
 };
 
-export const useVideo = (videoId: string, videoUrl: string, enabled: boolean) => {
+export const useVideo = (videoId: string, videoUrl: string, enabled: boolean, time_start?: number) => {
   return useQuery({
-    queryKey: ['video'],
+    queryKey: ['video', videoId],
     queryFn: async () => {
       console.log('saveVideo', { videoUrl, videoId });
 
-      const { data } = await axiosFrontend.post<BacketFileResponse>('/generate/backet', {
+      const { data, status, statusText } = await axiosFrontend.post<BacketFileResponse>('/generate/backet', {
         username: 'demo1',
         video_url: videoUrl,
         id: videoId,
+        time_start: time_start,
       });
+
+      if (status !== 200) throw new Error(statusText);
 
       return data;
     },

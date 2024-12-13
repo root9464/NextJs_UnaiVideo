@@ -11,7 +11,7 @@ import { useVideo } from './hooks/useVideo';
 export type Prompt = {
   prompt: string;
   first_frame_image: null | string | File | Blob | Buffer;
-  prompt_optimizer: null | boolean;
+  prompt_optimizer: boolean;
 };
 
 export type SetValuePromptFunction = (value: Partial<Prompt>) => void;
@@ -30,7 +30,7 @@ export const MainPageFlow = () => {
 
   const [createPrompt, setCreatePrompt] = useState<Prompt>({
     prompt: '',
-    first_frame_image: null,
+    first_frame_image: '',
     prompt_optimizer: false,
   });
 
@@ -41,7 +41,12 @@ export const MainPageFlow = () => {
   };
 
   const { data, mutate } = useGenerateVideo();
-  const { data: Video, isSuccess, isLoading, isError } = useVideo(data?.id ?? '', data?.video ?? '', !!data);
+  const {
+    data: Video,
+    isSuccess,
+    isLoading,
+    isError,
+  } = useVideo(data?.id ?? '', data?.video ?? '', !!data, isChooseModal ? timeStartVideo : undefined);
 
   const videoTimeTick = (event: SyntheticEvent<HTMLVideoElement, Event>): void => {
     const currentTime: number = Math.floor(event.currentTarget.currentTime);
@@ -74,7 +79,7 @@ export const MainPageFlow = () => {
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
         <InputsBlock
           setterPrompt={setValuePrompt}
-          submitPrompt={() => mutate({ id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt })}
+          submitPrompt={() => mutate({ video_id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt })}
           value={createPrompt.prompt}
         />
       </div>
