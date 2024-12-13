@@ -5,6 +5,8 @@ export const GalleryPageFlow = () => {
         Videos created in the free version are stored for <span className='text-uiLime'>24 hours.</span> With a connected wallet, storage is
         extended to <span className='text-uiLime'>3 days</span>.
       </h3>
+
+      <appkit-button />
     </div>
   );
 };
