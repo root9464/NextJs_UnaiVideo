@@ -22,8 +22,14 @@ createAppKit({
   networks: [mainnet, arbitrum],
   projectId,
   features: {
-    analytics: true, // Optional - defaults to your Cloud configuration
+    analytics: true,
+    email: false,
+    socials: false,
+    smartSessions: false,
+    swaps: false,
   },
+  enableWalletConnect: false,
+  debug: true,
 });
 
 export const GLobalProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
