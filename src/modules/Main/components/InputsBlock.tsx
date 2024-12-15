@@ -42,19 +42,21 @@ export const InputsBlock = ({ setterPrompt, submitPrompt, value }: InputsBlockPr
             <ArrowUoIcon fill='black' />
           </button>
         </>
-      ) : !!user && user.limits <= 0 ? (
-        <div className='flex h-14 w-full items-center justify-center rounded-lg border border-[#CF3B3B] bg-[#5D4141]'>
-          <p className='text-base font-semibold text-[#CF3B3B]'>You have no tokens left</p>
-        </div>
-      ) : initData && initData.user && !address ? (
+      ) : !!(initData && initData.user) && !address ? (
         <div className='flex h-14 w-full items-center justify-center rounded-lg border border-uiLime bg-transparent'>
           <Link href='/account' className='text-base text-uiLime'>
             You not connect wallet
           </Link>
         </div>
-      ) : (
+      ) : !!user && user.limits === 0 ? (
         <div className='flex h-14 w-full items-center justify-center rounded-lg border border-[#CF3B3B] bg-[#5D4141]'>
           <p className='text-base font-semibold text-[#CF3B3B]'>You have no tokens left</p>
+        </div>
+      ) : (
+        <div className='flex h-14 w-full items-center justify-center rounded-lg border border-uiLime bg-transparent'>
+          <Link href='/account' className='text-base text-uiLime'>
+            You not connect wallet
+          </Link>
         </div>
       )}
     </div>
