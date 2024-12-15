@@ -9,7 +9,7 @@ type Request = {
   firstName: string;
   lastName: string;
   hash: string;
-  wallet?: string;
+  wallet: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -23,61 +23,39 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  if (body.wallet) {
-    const userBalance = await getUserBalance(body.wallet);
-    if (userBalance === null) return NextResponse.json({ status: 'Error', success: false, error: 'User balance is required' }, { status: 400 });
+  const userBalance = await getUserBalance(body.wallet);
+  if (userBalance === null) return NextResponse.json({ status: 'Error', success: false, error: 'User balance is required' }, { status: 400 });
 
-    const getTier = calculateTier(userBalance, body.wallet);
-
-    if (existingUser) {
-      const isNeedUpdate =
-        existingUser.wallet?.toLowerCase() !== body.wallet?.toLowerCase() ||
-        (getTier?.limit !== undefined && existingUser.limits !== getTier?.limit) ||
-        (getTier?.tier !== undefined && existingUser.tier !== getTier?.tier) ||
-        existingUser.username !== body.username;
-
-      if (isNeedUpdate) {
-        const updateUser = await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            username: body.username,
-            wallet: body.wallet,
-            tier: getTier?.tier,
-            limits: getTier?.limit,
-            balance: userBalance,
-          },
-        });
-        if (!updateUser) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to update user' }, { status: 500 });
-
-        const { id, tier, limits, username, firstName, lastName, hash, balance } = updateUser;
-
-        return NextResponse.json(
-          { status: 'Updated', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
-          { status: 200 },
-        );
-      }
-    }
-
-    const user = await prisma.user.create({
-      data: {
-        ...body,
-        tier: getTier?.tier,
-        limits: getTier?.limit,
-        balance: userBalance,
-      },
-    });
-
-    if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to create user' }, { status: 500 });
-
-    const { id, tier, limits, username, firstName, lastName, hash, balance } = user;
-
-    return NextResponse.json(
-      { status: 'Created', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
-      { status: 200 },
-    );
-  }
+  const getTier = calculateTier(userBalance, body.wallet);
 
   if (existingUser) {
+    const isNeedUpdate =
+      existingUser.wallet?.toLowerCase() !== body.wallet?.toLowerCase() ||
+      (getTier?.limit !== undefined && existingUser.limits !== getTier?.limit) ||
+      (getTier?.tier !== undefined && existingUser.tier !== getTier?.tier) ||
+      existingUser.username !== body.username;
+
+    if (isNeedUpdate) {
+      const updateUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          username: body.username,
+          wallet: body.wallet,
+          tier: getTier?.tier,
+          limits: getTier?.limit,
+          balance: userBalance,
+        },
+      });
+      if (!updateUser) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to update user' }, { status: 500 });
+
+      const { id, tier, limits, username, firstName, lastName, hash, balance } = updateUser;
+
+      return NextResponse.json(
+        { status: 'Updated', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
+        { status: 200 },
+      );
+    }
+
     const user = await prisma.user.update({
       where: { id: existingUser.id },
       data: body,
@@ -90,35 +68,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ status: 'Error', success: false, error: 'User data is required' }, { status: 400 });
-}
+  const user = await prisma.user.create({
+    data: {
+      ...body,
+      tier: getTier?.tier,
+      limits: getTier?.limit,
+      balance: userBalance,
+    },
+  });
 
-export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('id');
+  if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to create user' }, { status: 500 });
 
-    if (!userId) {
-      return NextResponse.json({ status: 'Error', success: false, error: 'User ID is required' }, { status: 400 });
-    }
+  const { id, tier, limits, username, firstName, lastName, hash, balance } = user;
 
-    const user = await prisma.user.findFirst({ where: { id: parseInt(userId) } });
-
-    if (!user) {
-      return NextResponse.json({
-        status: 'User not found',
-        success: true,
-        user: null,
-      });
-    }
-
-    return NextResponse.json({
-      status: 'User found',
-      success: true,
-      user: user,
-    });
-  } catch (error) {
-    console.error('Error getting user:', error);
-    return NextResponse.json({ status: 'Error', success: false, error: 'Failed to get user from the database.' }, { status: 500 });
-  }
+  return NextResponse.json(
+    { status: 'Created', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
+    { status: 200 },
+  );
 }

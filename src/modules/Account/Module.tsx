@@ -6,7 +6,7 @@ import { TiersBlock } from './components/TIers';
 import { TIERS_DATA } from './constants/const';
 import { useAuth } from './hooks/useAuth';
 
-export const { initData } = {
+export const retrieveLaunchParams = () => ({
   initData: {
     user: {
       id: 99281932,
@@ -23,10 +23,12 @@ export const { initData } = {
     chatType: 'sender',
     chatInstance: '8428209589180549439',
   },
-};
+});
 
 export const AccountPageFlow = () => {
   const { address } = useAppKitAccount();
+
+  const { initData } = retrieveLaunchParams();
 
   const { data } = useAuth({ initData, wallet: address });
 

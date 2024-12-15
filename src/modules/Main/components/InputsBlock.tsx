@@ -1,6 +1,7 @@
 import { User } from '@/shared/types/types';
-import { initData } from '@modules/Account/Module';
+import { retrieveLaunchParams } from '@modules/Account/Module';
 import { ArrowUoIcon } from '@public/tsx/ArrowUoIcon';
+import { useAppKitAccount } from '@reown/appkit/react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { SetValuePromptFunction } from '../Module';
@@ -14,11 +15,14 @@ type InputsBlockProps = {
 
 export const InputsBlock = ({ setterPrompt, submitPrompt, value }: InputsBlockProps) => {
   const queryClient = useQueryClient();
+  const { initData } = retrieveLaunchParams();
+
   const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
+  const { address } = useAppKitAccount();
 
   return (
     <div className='flex h-[40px] w-full flex-row items-center justify-between gap-x-4'>
-      {user && user.limits > 0 ? (
+      {!!user && user.limits > 0 ? (
         <>
           <ImageINput setterPrompt={setterPrompt} />
           <input
@@ -38,7 +42,11 @@ export const InputsBlock = ({ setterPrompt, submitPrompt, value }: InputsBlockPr
             <ArrowUoIcon fill='black' />
           </button>
         </>
-      ) : initData && initData.user ? (
+      ) : !!user && user.limits <= 0 ? (
+        <div className='flex h-14 w-full items-center justify-center rounded-lg border border-[#CF3B3B] bg-[#5D4141]'>
+          <p className='text-base font-semibold text-[#CF3B3B]'>You have no tokens left</p>
+        </div>
+      ) : initData && initData.user && !address ? (
         <div className='flex h-14 w-full items-center justify-center rounded-lg border border-uiLime bg-transparent'>
           <Link href='/account' className='text-base text-uiLime'>
             You not connect wallet

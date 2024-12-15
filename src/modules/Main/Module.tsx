@@ -2,7 +2,7 @@
 import { User } from '@/shared/types/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { SyntheticEvent, useState } from 'react';
-import { initData } from '../Account/Module';
+import { retrieveLaunchParams } from '../Account/Module';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
@@ -58,6 +58,7 @@ export const MainPageFlow = () => {
   };
 
   const queryClient = useQueryClient();
+  const { initData } = retrieveLaunchParams();
   const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
 
   return (
