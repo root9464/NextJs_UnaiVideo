@@ -1,12 +1,13 @@
 'use client';
 import { useQueryClient } from '@tanstack/react-query';
 import { User } from '@telegram-apps/bridge';
-import { initData } from '../Account/Module';
+import { retrieveLaunchParams } from '../Account/Module';
 import { VideoInfo } from './Components/VideoInfo';
 import { useVideos } from './hooks/useVideos';
 
 export const GalleryPageFlow = () => {
   const queryClient = useQueryClient();
+  const { initData } = retrieveLaunchParams();
   const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
 
   const { data: videos, isSuccess, isLoading, isError, error } = useVideos(user && user.username ? user.username : '');

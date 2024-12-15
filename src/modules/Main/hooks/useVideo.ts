@@ -8,14 +8,14 @@ export type BacketFileResponse = {
   video_url: string;
 };
 
-export const useVideo = (videoId: string, videoUrl: string, enabled: boolean, time_start?: number) => {
+export const useVideo = (videoId: string, videoUrl: string, enabled: boolean, userName: string, time_start?: number) => {
   return useQuery({
     queryKey: ['video', videoId],
     queryFn: async () => {
       console.log('saveVideo', { videoUrl, videoId });
 
       const { data, status, statusText } = await axiosFrontend.post<BacketFileResponse>('/generate/backet', {
-        username: 'demo1',
+        username: userName,
         video_url: videoUrl,
         id: videoId,
         time_start: time_start,

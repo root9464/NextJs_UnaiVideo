@@ -12,6 +12,8 @@ type Body = {
 
   first_frame_image: null | string | File | Blob | Buffer;
   prompt_optimizer: boolean;
+
+  user_id: number;
 };
 
 export async function POST(req: Request) {
@@ -23,6 +25,23 @@ export async function POST(req: Request) {
   if (!body.prompt) {
     return NextResponse.json({ error: 'Field "prompt" is required' }, { status: 400 });
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: body.user_id },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
+  if (user.limits !== null && user.limits <= 0) {
+    return NextResponse.json({ error: 'Limit exceeded' }, { status: 403 });
+  }
+
+  await prisma.user.update({
+    where: { id: body.user_id },
+    data: { limits: user.limits !== null ? user.limits - 1 : null },
+  });
 
   if (body.video_id && body.time_start && !body.first_frame_image) {
     const videoData = await prisma.video.findFirst({

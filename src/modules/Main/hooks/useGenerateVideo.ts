@@ -5,15 +5,15 @@ import { useMutation } from '@tanstack/react-query';
 export const useGenerateVideo = () =>
   useMutation({
     mutationKey: ['video_id'],
-    mutationFn: async (promptObject: Prompt & { video_id?: string; time_start?: number }) => {
+    mutationFn: async (promptObject: Prompt & { video_id?: string; time_start?: number; user_id: number }) => {
       console.log('generate video data', promptObject);
 
-      const { prompt, time_start, video_id, prompt_optimizer, first_frame_image } = promptObject;
+      const { prompt, time_start, video_id, prompt_optimizer, first_frame_image, user_id } = promptObject;
 
       if (video_id && time_start) {
         console.log('generateNewVideo', {
           prompt: prompt,
-          video_id: video_id,
+          id: video_id,
           time_start: time_start,
         });
 
@@ -21,6 +21,7 @@ export const useGenerateVideo = () =>
           prompt: prompt,
           video_id: video_id,
           time_start: time_start,
+          user_id: user_id,
         });
 
         if (!data) throw new Error('Something went wrong');
@@ -31,13 +32,27 @@ export const useGenerateVideo = () =>
           prompt: prompt,
           prompt_optimizer: prompt_optimizer,
           first_frame_image: first_frame_image,
+          user_id: user_id,
         }); // ЕСЛИ ЧТО ВОТ ТУТ ВОЗМОЖНО ОШИБКА
 
         const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', {
           prompt: prompt,
           prompt_optimizer: prompt_optimizer,
           first_frame_image: first_frame_image,
+          user_id: user_id,
         });
+
+        // const { data } = (await new Promise((resolve) => {
+        //   resolve({
+        //     data: {
+        //       id: '2r6h9z67tdrge0cksba84fd5cc',
+        //       status: 'succeeded',
+        //       prompt: 'не важно',
+        //       error: 'не важно',
+        //       video: 'https://wycoeqwvjrozfkekkhyq.supabase.co/storage/v1/object/public/videos/rogue_2r6h9z67tdrge0cksba84fd5cc',
+        //     },
+        //   });
+        // })) as { data: ResponseGenerateVideo };
 
         if (!data) throw new Error('Something went wrong');
 

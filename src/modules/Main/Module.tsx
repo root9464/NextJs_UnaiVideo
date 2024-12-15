@@ -31,6 +31,10 @@ export const MainPageFlow = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isChooseModal, setIsChooseModal] = useState(false);
 
+  const queryClient = useQueryClient();
+  const { initData } = retrieveLaunchParams();
+  const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
+
   const [createPrompt, setCreatePrompt] = useState<Prompt>({
     prompt: '',
     first_frame_image: '',
@@ -49,7 +53,7 @@ export const MainPageFlow = () => {
     isSuccess,
     isLoading,
     isError,
-  } = useVideo(data?.id ?? '', data?.video ?? '', !!data, isChooseModal ? timeStartVideo : undefined);
+  } = useVideo(data?.id ?? '', data?.video ?? '', !!data, user?.username ?? '', isChooseModal ? timeStartVideo : undefined);
 
   const videoTimeTick = (event: SyntheticEvent<HTMLVideoElement, Event>): void => {
     const currentTime: number = Math.floor(event.currentTarget.currentTime);
@@ -57,9 +61,9 @@ export const MainPageFlow = () => {
     if (isChooseModal) setTimeStartVideo(currentTime);
   };
 
-  const queryClient = useQueryClient();
-  const { initData } = retrieveLaunchParams();
-  const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
+  if (isSuccess && Video.status === 'succeeded') {
+    queryClient.refetchQueries({ queryKey: ['user' + initData?.user?.id] });
+  }
 
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-5 py-4'>
@@ -86,7 +90,7 @@ export const MainPageFlow = () => {
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
         <InputsBlock
           setterPrompt={setValuePrompt}
-          submitPrompt={() => mutate({ video_id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt })}
+          submitPrompt={() => mutate({ video_id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt, user_id: user?.id ?? 0 })}
           value={createPrompt.prompt}
         />
       </div>

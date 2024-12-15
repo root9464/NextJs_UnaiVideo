@@ -4,7 +4,6 @@ import { getVideoFromSupabase, getVideoFromSupabaseB64, uploadVideoToSupabase, u
 import { PredictionResponse } from '@shared/types/types';
 import { axiosInstance } from '@shared/utils/axios';
 import prisma from '@shared/utils/db';
-import { differenceInDays } from 'date-fns';
 import { NextResponse } from 'next/server';
 
 type BacketFile = {
@@ -45,8 +44,6 @@ export async function POST(req: Request) {
   if (status === 'failed') {
     return NextResponse.json({ error, logs, status });
   }
-
-  // Check if the video already exists in the database
   const checkVideoInDb = await prisma.video.findFirst({
     where: {
       id: id,
@@ -69,60 +66,54 @@ export async function POST(req: Request) {
     });
 
     if (!userVideos || userVideos.length === 0) {
-      return NextResponse.json({ error: 'User has no videos' }, { status: 404 });
+      return NextResponse.json({ error: 'User has no videos 1' }, { status: 404 });
     }
 
     const lastVideo = userVideos[0];
-    const currentDate = new Date();
-    const daysDifference = differenceInDays(currentDate, new Date(lastVideo.createdAt));
     const oldFileName = `${lastVideo.username}_${lastVideo.id}`;
 
-    if (daysDifference >= 1) {
-      const oldVideoBuffer = await getVideoFromSupabaseB64(oldFileName);
-      const oldVideoBufferShot = await extractSnapshot(oldVideoBuffer, time_start);
+    const oldVideoBuffer = await getVideoFromSupabaseB64(oldFileName);
+    const oldVideoBufferShot = await extractSnapshot(oldVideoBuffer, time_start);
 
-      if (!oldVideoBuffer || !oldVideoBufferShot) {
-        return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
-      }
-
-      const actualVideoBuffer = await actualVideoFromB64(video_url);
-
-      if (!actualVideoBuffer) {
-        return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
-      }
-
-      const newVideoBuffer = await cutAndConcatVideos(oldVideoBuffer, actualVideoBuffer, time_start);
-      if (!newVideoBuffer) {
-        return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
-      }
-
-      const supabaseResponse = await uploadVideoToSupabaseB64(newVideoBuffer, bucketName, fileName, typeFile);
-      if (!supabaseResponse || !supabaseResponse.id) {
-        return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
-      }
-
-      const { publicUrl } = await getVideoFromSupabase(fileName);
-
-      if (!publicUrl) {
-        return NextResponse.json({ error: 'Dont get video from storage' }, { status: 500 });
-      }
-
-      await prisma.video.create({
-        data: {
-          id,
-          file_name: fileName,
-          username,
-        },
-      });
-
-      return NextResponse.json({
-        id,
-        status,
-        video_url: publicUrl,
-      });
+    if (!oldVideoBuffer || !oldVideoBufferShot) {
+      return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
     }
 
-    return NextResponse.json({ error: 'User has no videos' }, { status: 404 });
+    const actualVideoBuffer = await actualVideoFromB64(video_url);
+
+    if (!actualVideoBuffer) {
+      return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+    }
+
+    const newVideoBuffer = await cutAndConcatVideos(oldVideoBuffer, actualVideoBuffer, time_start);
+    if (!newVideoBuffer) {
+      return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+    }
+
+    const supabaseResponse = await uploadVideoToSupabaseB64(newVideoBuffer, bucketName, fileName, typeFile);
+    if (!supabaseResponse || !supabaseResponse.id) {
+      return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+    }
+
+    const { publicUrl } = await getVideoFromSupabase(fileName);
+
+    if (!publicUrl) {
+      return NextResponse.json({ error: 'Dont get video from storage' }, { status: 500 });
+    }
+
+    await prisma.video.create({
+      data: {
+        id,
+        file_name: fileName,
+        username,
+      },
+    });
+
+    return NextResponse.json({
+      id,
+      status,
+      video_url: publicUrl,
+    });
   }
 
   const supabaseResponse = await uploadVideoToSupabase(video_url, bucketName, fileName, typeFile);
@@ -130,7 +121,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
 
-  // Ensure unique constraint is not violated
   const videoExists = await prisma.video.findUnique({ where: { id } });
   if (videoExists) {
     return NextResponse.json({ error: 'Video with this ID already exists' }, { status: 400 });
