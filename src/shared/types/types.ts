@@ -10,12 +10,13 @@ export type Tier = null | 'Pioneer' | 'Champion' | 'Hero' | 'Legend';
 
 export type User = {
   id: number;
-  tier: Tier;
+  tier?: Tier;
+  limits: number;
   username: string;
   firstName: string;
   lastName: string;
   hash: string;
-  wallet: string;
+  balance: number;
 };
 
 export type PredictionResponse = {

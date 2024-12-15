@@ -1,5 +1,8 @@
 'use client';
+import { User } from '@/shared/types/types';
+import { useQueryClient } from '@tanstack/react-query';
 import { SyntheticEvent, useState } from 'react';
+import { initData } from '../Account/Module';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
@@ -54,9 +57,12 @@ export const MainPageFlow = () => {
     if (isChooseModal) setTimeStartVideo(currentTime);
   };
 
+  const queryClient = useQueryClient();
+  const user: User | undefined = queryClient.getQueryData(['user' + initData?.user?.id]);
+
   return (
     <div className='relative h-[calc(100%-113px)] w-full px-5 py-4'>
-      <Limits tokenValue={2} />
+      <Limits tokenValue={user?.limits ?? 0} />
       <div className='mt-[14px] flex h-72 w-full items-center justify-center rounded-xl border border-uiLime/30 bg-uiDarkGray outline-none'>
         {Video && Video.isVideo ? (
           <video

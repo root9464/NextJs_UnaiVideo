@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { UserVideoResponse, Video } from '../func/getUserVideos';
+import { UserVideoResponse, Video } from '../hooks/useVideos';
 
 export const VideoInfo = ({ userVideo }: { userVideo: UserVideoResponse[] }) => (
   <>

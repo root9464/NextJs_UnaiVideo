@@ -1,7 +1,7 @@
-import { User } from '@/shared/types/types';
+import { Tier } from '@/shared/types/types';
 
-export const calculateTier = (user: User, tokens: number) => {
-  const required = user.wallet && user.wallet.startsWith('0x') ? true : false;
+export const calculateTier = (tokens: number, wallet: string): { tier: Tier; limit: number } | null => {
+  const required = !!(wallet && wallet.startsWith('0x'));
   switch (true) {
     case required && tokens >= 50_000:
       return {

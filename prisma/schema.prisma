@@ -23,12 +23,13 @@ enum Tier {
 model user {
   id        Int     @id @unique
   tier      Tier?
-  limits    Int?
+  limits    Int?    @default(2)
   username  String  @unique
   firstName String
   lastName  String
   hash      String
   wallet    String?
+  balance   Int?    @default(0)
 }
 
 model video {

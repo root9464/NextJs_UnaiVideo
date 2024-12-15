@@ -1,53 +1,96 @@
-import { User } from '@/shared/types/types';
+import { calculateTier } from '@/modules/Main/func/getTier';
+import { getUserBalance } from '@/shared/utils/userHandler';
 import prisma from '@shared/utils/db';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-  const user: User = await req.json();
+type Request = {
+  id: number;
+  username: string;
+  firstName: string;
+  lastName: string;
+  hash: string;
+  wallet?: string;
+};
 
-  if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'User data is required' }, { status: 400 });
+export async function POST(req: NextRequest) {
+  const body: Request = await req.json();
+
+  if (!body) return NextResponse.json({ status: 'Error', success: false, error: 'User data is required' }, { status: 400 });
 
   const existingUser = await prisma.user.findFirst({
     where: {
-      OR: [{ id: user.id }, { username: user.username }],
+      OR: [{ id: body.id }, { username: body.username }],
     },
   });
 
-  if (existingUser) {
-    if (
-      existingUser.firstName !== user.firstName ||
-      existingUser.lastName !== user.lastName ||
-      existingUser.tier !== user.tier ||
-      existingUser.wallet !== user.wallet
-    ) {
-      const updatedUser = await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          tier: user.tier,
-          wallet: user.wallet,
-        },
-      });
-      return NextResponse.json({
-        status: 'User updated',
-        success: true,
-        user: updatedUser,
-      });
+  if (body.wallet) {
+    const userBalance = await getUserBalance(body.wallet);
+    if (userBalance === null) return NextResponse.json({ status: 'Error', success: false, error: 'User balance is required' }, { status: 400 });
+
+    const getTier = calculateTier(userBalance, body.wallet);
+
+    if (existingUser) {
+      const isNeedUpdate =
+        existingUser.wallet?.toLowerCase() !== body.wallet?.toLowerCase() ||
+        (getTier?.limit !== undefined && existingUser.limits !== getTier?.limit) ||
+        (getTier?.tier !== undefined && existingUser.tier !== getTier?.tier) ||
+        existingUser.username !== body.username;
+
+      if (isNeedUpdate) {
+        const updateUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            username: body.username,
+            wallet: body.wallet,
+            tier: getTier?.tier,
+            limits: getTier?.limit,
+            balance: userBalance,
+          },
+        });
+        if (!updateUser) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to update user' }, { status: 500 });
+
+        const { id, tier, limits, username, firstName, lastName, hash, balance } = updateUser;
+
+        return NextResponse.json(
+          { status: 'Updated', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
+          { status: 200 },
+        );
+      }
     }
-    return NextResponse.json({
-      status: 'User already exists',
-      success: true,
-      user: existingUser,
+
+    const user = await prisma.user.create({
+      data: {
+        ...body,
+        tier: getTier?.tier,
+        limits: getTier?.limit,
+        balance: userBalance,
+      },
     });
+
+    if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to create user' }, { status: 500 });
+
+    const { id, tier, limits, username, firstName, lastName, hash, balance } = user;
+
+    return NextResponse.json(
+      { status: 'Created', success: userBalance, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
+      { status: 200 },
+    );
   }
 
-  const newUser = await prisma.user.create({ data: user });
-  return NextResponse.json({
-    status: 'User created',
-    success: true,
-    user: newUser,
-  });
+  if (existingUser) {
+    const user = await prisma.user.update({
+      where: { id: existingUser.id },
+      data: body,
+    });
+    if (!user) return NextResponse.json({ status: 'Error', success: false, error: 'Failed to update user' }, { status: 500 });
+    const { id, tier, limits, username, firstName, lastName, hash, balance } = user;
+    return NextResponse.json(
+      { status: 'Get', success: true, user: { id, tier, limits, username, firstName, lastName, hash, balance } },
+      { status: 200 },
+    );
+  }
+
+  return NextResponse.json({ status: 'Error', success: false, error: 'User data is required' }, { status: 400 });
 }
 
 export async function GET(req: NextRequest) {
