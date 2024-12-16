@@ -47,7 +47,7 @@ export const useVideo = (videoId: string, videoUrl: string, enabled: boolean, us
         return false;
       }
 
-      return 1000 * 3;
+      return 1000 * 30;
     },
     select: (data) => ({
       ...data,

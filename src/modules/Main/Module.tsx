@@ -7,7 +7,6 @@ import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';
 import { Modal } from './components/Modal';
-import { SettingsButtons } from './components/SettingsButtons';
 import { useGenerateVideo } from './hooks/useGenerateVideo';
 import { useVideo } from './hooks/useVideo';
 
@@ -48,6 +47,8 @@ export const MainPageFlow = () => {
   };
 
   const { data, mutate, isSuccess: isMutateSuccess } = useGenerateVideo();
+
+  // костыль но рабочий
   if (isMutateSuccess && data) {
     queryClient.setQueryData(['video_generate'], data);
   }
@@ -62,7 +63,7 @@ export const MainPageFlow = () => {
   } = useVideo(
     videoGenerateData?.id ?? '',
     videoGenerateData?.video ?? '',
-    !!videoGenerateData && videoGenerateData.status !== 'succeeded',
+    !!videoGenerateData && videoGenerateData.status !== 'succeeded', //сомнительный вариант
     user?.username ?? '',
     isChooseModal ? timeStartVideo : undefined,
   );
@@ -99,7 +100,7 @@ export const MainPageFlow = () => {
 
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
         <ChooseBlock visible={isSuccess && Video.isVideo} isOpenModal={isChooseModal} setIsOpenModal={setIsChooseModal} />
-        <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
+        {/* <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} /> */}
         {isLoading || Video?.status === 'processing' ? (
           <div className='flex h-[40px] w-full flex-row items-center justify-between gap-x-4'>
             <p>Your video generated</p>
