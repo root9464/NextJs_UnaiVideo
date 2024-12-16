@@ -46,10 +46,10 @@ export const useGenerateVideo = () =>
         //   resolve({
         //     data: {
         //       id: '2r6h9z67tdrge0cksba84fd5cc',
-        //       status: 'succeeded',
+        //       status: 'processing',
         //       prompt: 'не важно',
         //       error: 'не важно',
-        //       video: 'https://wycoeqwvjrozfkekkhyq.supabase.co/storage/v1/object/public/videos/rogue_2r6h9z67tdrge0cksba84fd5cc',
+        //       video: 'https://wycoeqwvjrozfkekkhyq.supabase.co/storage/v1/object/public/videos/demo.mp4',
         //     },
         //   });
         // })) as { data: ResponseGenerateVideo };
@@ -59,6 +59,8 @@ export const useGenerateVideo = () =>
         return data;
       }
     },
+
+    gcTime: Infinity,
 
     onSuccess: (data) => {
       console.log('video generated successfully', data);

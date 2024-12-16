@@ -47,13 +47,25 @@ export const MainPageFlow = () => {
     setCreatePrompt((prev) => ({ ...prev, ...value }));
   };
 
-  const { data, mutate } = useGenerateVideo();
+  const { data, mutate, isSuccess: isMutateSuccess } = useGenerateVideo();
+  if (isMutateSuccess && data) {
+    queryClient.setQueryData(['video_generate'], data);
+  }
+
+  const videoGenerateData: ResponseGenerateVideo | undefined = queryClient.getQueryData(['video_generate']);
+
   const {
     data: Video,
     isSuccess,
     isLoading,
     isError,
-  } = useVideo(data?.id ?? '', data?.video ?? '', !!data, user?.username ?? '', isChooseModal ? timeStartVideo : undefined);
+  } = useVideo(
+    videoGenerateData?.id ?? '',
+    videoGenerateData?.video ?? '',
+    !!videoGenerateData && videoGenerateData.status !== 'succeeded',
+    user?.username ?? '',
+    isChooseModal ? timeStartVideo : undefined,
+  );
 
   const videoTimeTick = (event: SyntheticEvent<HTMLVideoElement, Event>): void => {
     const currentTime: number = Math.floor(event.currentTarget.currentTime);
@@ -88,11 +100,17 @@ export const MainPageFlow = () => {
       <div className='absolute bottom-5 left-0 flex h-fit w-full flex-col gap-y-4 px-4'>
         <ChooseBlock visible={isSuccess && Video.isVideo} isOpenModal={isChooseModal} setIsOpenModal={setIsChooseModal} />
         <SettingsButtons isDownload={isSuccess && Video.isVideo} openModal={setIsOpenModal} />
-        <InputsBlock
-          setterPrompt={setValuePrompt}
-          submitPrompt={() => mutate({ video_id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt, user_id: user?.id ?? 0 })}
-          value={createPrompt.prompt}
-        />
+        {isLoading || Video?.status === 'processing' ? (
+          <div className='flex h-[40px] w-full flex-row items-center justify-between gap-x-4'>
+            <p>Your video generated</p>
+          </div>
+        ) : (
+          <InputsBlock
+            setterPrompt={setValuePrompt}
+            submitPrompt={() => mutate({ video_id: Video ? Video.id : '', time_start: timeStartVideo, ...createPrompt, user_id: user?.id ?? 0 })}
+            value={createPrompt.prompt}
+          />
+        )}
       </div>
 
       <Modal visible={isOpenModal} setterPrompt={setValuePrompt} closeModal={setIsOpenModal} />
