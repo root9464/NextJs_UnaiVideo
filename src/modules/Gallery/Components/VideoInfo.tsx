@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { UserVideoResponse, Video } from '../hooks/useVideos';
 
 export const VideoInfo = ({ userVideo }: { userVideo: UserVideoResponse[] }) => (
@@ -18,16 +17,7 @@ const VideoInfoFragmet = ({ videos }: { videos: Omit<Video, 'file_name'>[] }) =>
   <>
     {videos.map(({ id, video_url }) => (
       <div key={id} className='flex h-fit w-full flex-col items-start gap-y-4 rounded-[8px] bg-uiPrimaryLightGray px-3 py-2'>
-        <div className='flex h-full w-full flex-row items-center justify-between'>
-          <h4>Video Id</h4>
-          <p>{id}</p>
-        </div>
-        <div className='flex h-full w-full flex-row items-center justify-between'>
-          <h4>Video Url</h4>
-          <Link href={video_url} className='rounded-[8px] bg-uiLime px-5 py-2 text-sm font-semibold text-uiDarkGray'>
-            View
-          </Link>
-        </div>
+        <video src={video_url} controls className='h-max w-full rounded-[8px]' />
       </div>
     ))}
   </>
