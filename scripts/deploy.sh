@@ -13,12 +13,12 @@ rebuild_front() {
     docker rm $CONTAINER_NAME &&
     docker rmi $IMAGE_NAME &&
     docker build -f $DOCKERFILE_PATH .. -t $IMAGE_NAME &&
-    docker run --name $CONTAINER_NAME -p 8080:8080 -d $IMAGE_NAME
+    docker run --name $CONTAINER_NAME -p 3000:3000 -d $IMAGE_NAME
 }
 
 first_build() {
     docker build -f $DOCKERFILE_PATH .. -t $IMAGE_NAME &&
-    docker run --name $CONTAINER_NAME -p 8080:8080 -d $IMAGE_NAME
+    docker run --name $CONTAINER_NAME -p 3000:3000 -d $IMAGE_NAME
 }
 
 delete_build_bundle(){

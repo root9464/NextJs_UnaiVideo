@@ -1,4 +1,5 @@
 'use client';
+import { AccountIco } from '@public/tsx/AccountIco';
 import { GalleryIcon } from '@public/tsx/GalleryIco';
 import { GenerateIcon } from '@public/tsx/GenerateIcon';
 import Link from 'next/link';
@@ -17,7 +18,7 @@ const menuItems = [
   },
   {
     name: 'Account',
-    icon: <GenerateIcon width='24' height='24' stroke='white' />,
+    icon: <AccountIco width='24' height='24' stroke='white' />,
     path: '/account',
   },
 ];

@@ -1,7 +1,7 @@
 import { SvgIcon } from '@/shared/types/types';
 
 export const GenerateIcon = ({ width, height, stroke }: SvgIcon) => (
-  <svg width={width} height={height} viewBox='0 0 23 21' fill='none'>
+  <svg width={width} height={height} viewBox='0 0 23 21' fill='none' xmlns='http://www.w3.org/2000/svg'>
     <path
       d='M21 9V5C21 2.79086 19.2091 1 17 1H5C2.79086 1 1 2.79086 1 5V13C1 15.2091 2.79086 17 5 17H11'
       stroke={stroke}
