@@ -1,8 +1,8 @@
 import { User } from '@/shared/types/types';
-import { retrieveLaunchParams } from '@modules/Account/Module';
 import { ArrowUoIcon } from '@public/tsx/ArrowUoIcon';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { useQueryClient } from '@tanstack/react-query';
+import { retrieveLaunchParams } from '@telegram-apps/bridge';
 import Link from 'next/link';
 import { SetValuePromptFunction } from '../Module';
 import { ImageINput } from '../widgets/ImageInput';

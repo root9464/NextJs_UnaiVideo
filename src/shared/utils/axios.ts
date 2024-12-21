@@ -6,7 +6,3 @@ export const axiosInstance = axios.create({
     Authorization: `Bearer ${process.env.NEXT_PUBLIC_REPLICATE_API_TOKEN}`,
   },
 });
-
-export const axiosFrontend = axios.create({
-  baseURL: 'http://localhost:3000/api',
-});

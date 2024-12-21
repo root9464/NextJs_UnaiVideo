@@ -1,8 +1,8 @@
 'use client';
 import { User } from '@/shared/types/types';
 import { useQueryClient } from '@tanstack/react-query';
+import { retrieveLaunchParams } from '@telegram-apps/bridge';
 import { SyntheticEvent, useState } from 'react';
-import { retrieveLaunchParams } from '../Account/Module';
 import { ChooseBlock } from './components/ChooseBlock';
 import { InputsBlock } from './components/InputsBlock';
 import { Limits } from './components/Limits';

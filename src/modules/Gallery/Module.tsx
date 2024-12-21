@@ -1,7 +1,6 @@
 'use client';
 import { useQueryClient } from '@tanstack/react-query';
-import { User } from '@telegram-apps/bridge';
-import { retrieveLaunchParams } from '../Account/Module';
+import { retrieveLaunchParams, User } from '@telegram-apps/bridge';
 import { VideoInfo } from './Components/VideoInfo';
 import { useVideos } from './hooks/useVideos';
 

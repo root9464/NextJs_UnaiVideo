@@ -1,6 +1,6 @@
 /* eslint-disable @tanstack/query/exhaustive-deps */
-import { axiosFrontend } from '@/shared/utils/axios';
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 
 export type BacketFileResponse = {
   id: string;
@@ -14,7 +14,7 @@ export const useVideo = (videoId: string, videoUrl: string, enabled: boolean, us
     queryFn: async () => {
       console.log('saveVideo', { videoUrl, videoId });
 
-      const { data, status, statusText } = await axiosFrontend.post<BacketFileResponse>('/generate/backet', {
+      const { data, status, statusText } = await axios.post<BacketFileResponse>('/api/generate/backet', {
         username: userName,
         video_url: videoUrl,
         id: videoId,

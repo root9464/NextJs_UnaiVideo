@@ -2,28 +2,29 @@
 import { SwipeCarousel } from '@/components/Carousel';
 import { WalletButton } from '@/components/WalletButton';
 import { useAppKitAccount } from '@reown/appkit/react';
+import { retrieveLaunchParams } from '@telegram-apps/bridge';
 import { TiersBlock } from './components/TIers';
 import { TIERS_DATA } from './constants/const';
 import { useAuth } from './hooks/useAuth';
 
-export const retrieveLaunchParams = () => ({
-  initData: {
-    user: {
-      id: 99281932,
-      firstName: 'Andrew',
-      lastName: 'Rogue',
-      username: 'rogue',
-      languageCode: 'en',
-      isPremium: true,
-      allowsWriteToPm: true,
-    },
-    hash: '89d6079ad6762351f38c6dbbc41bb53048019256a9443988af7a48bcad16ba31',
-    authDate: new Date(1716922846000),
-    startParam: 'debug',
-    chatType: 'sender',
-    chatInstance: '8428209589180549439',
-  },
-});
+// export const retrieveLaunchParams = () => ({
+//   initData: {
+//     user: {
+//       id: 99281932,
+//       firstName: 'Andrew',
+//       lastName: 'Rogue',
+//       username: 'rogue',
+//       languageCode: 'en',
+//       isPremium: true,
+//       allowsWriteToPm: true,
+//     },
+//     hash: '89d6079ad6762351f38c6dbbc41bb53048019256a9443988af7a48bcad16ba31',
+//     authDate: new Date(1716922846000),
+//     startParam: 'debug',
+//     chatType: 'sender',
+//     chatInstance: '8428209589180549439',
+//   },
+// });
 
 export const AccountPageFlow = () => {
   const { address } = useAppKitAccount();

@@ -22,7 +22,7 @@
     "@tanstack/react-query-devtools": "^5.62.2",
     "@telegram-apps/bridge": "^1.7.0",
     "@telegram-apps/sdk": "^2.9.0",
-    "@telegram-apps/sdk-react": "^2.0.18",
+    "@telegram-apps/sdk-react": "^2.0.22",
     "@telegram-apps/signals": "^1.1.0",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@typescript-eslint/utils": "^8.18.0",

@@ -1,6 +1,6 @@
-import { axiosFrontend } from '@/shared/utils/axios';
 import { Prompt, ResponseGenerateVideo } from '@modules/Main/Module';
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 export const useGenerateVideo = () =>
   useMutation({
@@ -17,7 +17,7 @@ export const useGenerateVideo = () =>
           time_start: time_start,
         });
 
-        const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', {
+        const { data } = await axios.post<ResponseGenerateVideo>('/api/generate', {
           prompt: prompt,
           video_id: video_id,
           time_start: time_start,
@@ -35,7 +35,7 @@ export const useGenerateVideo = () =>
           user_id: user_id,
         }); // ЕСЛИ ЧТО ВОТ ТУТ ВОЗМОЖНО ОШИБКА
 
-        const { data } = await axiosFrontend.post<ResponseGenerateVideo>('/generate', {
+        const { data } = await axios.post<ResponseGenerateVideo>('/api/generate', {
           prompt: prompt,
           prompt_optimizer: prompt_optimizer,
           first_frame_image: first_frame_image,
