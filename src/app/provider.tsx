@@ -5,6 +5,8 @@ import { arbitrum, mainnet } from '@reown/appkit/networks';
 import { createAppKit } from '@reown/appkit/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { init } from '@telegram-apps/sdk';
+
 const queryClient = new QueryClient();
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
@@ -30,6 +32,8 @@ createAppKit({
   enableWalletConnect: false,
   debug: true,
 });
+
+init();
 
 export const GLobalProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   return (
